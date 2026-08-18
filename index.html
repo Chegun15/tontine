@@ -1,156 +1,315 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestion Tontine Pro</title>
-  <!-- Frameworks CSS et Icônes -->
-  <script src="https://tailwindcss.com"></script>
-  <script src="https://jsdelivr.net"></script>
-  <link href="https://googleapis.com" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body class="min-h-screen w-full bg-slate-50">
+  <title>Gestion de Tontine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head> <body class="bg-slate-50 text-slate-800 min-h-screen">
 
-  <!-- SCREEN 1 : AUTHENTIFICATION -->
-  <div id="auth-screen" class="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-amber-800 to-amber-600">
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md fade-in">
-      <div class="text-center mb-6">
-        <h2 class="text-3xl font-bold text-gray-800">Tontine Securis</h2>
-        <p class="text-gray-500 mt-1" id="auth-subtitle">Connectez-vous à votre espace Collecteur</p>
-      </div>
-      
+  <!-- ECRAN DE CONNEXION -->
+  <div id="auth-screen" class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+      <h2 class="text-2xl font-bold text-center text-amber-600 mb-6">Connexion Tontine</h2>
       <div class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Adresse Email</label>
-          <input id="auth-email" type="email" placeholder="agent@tontine.com" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500">
+          <label class="block text-xs font-semibold mb-1">Email</label>
+          <input id="auth-email" type="email" class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-amber-500">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Mot de passe</label>
-          <input id="auth-password" type="password" placeholder="••••••••" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500">
+          <label class="block text-xs font-semibold mb-1">Mot de passe</label>
+          <input id="auth-pass" type="password" class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-amber-500">
         </div>
-        
-        <button id="btn-primary-auth" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 rounded-xl transition text-sm">Se connecter</button>
-        
-        <div class="text-center mt-4">
-          <button id="btn-toggle-auth" class="text-sm text-amber-700 hover:underline">Pas de compte ? Créer un espace Agent</button>
-        </div>
+        <button id="btn-login" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 rounded-lg text-sm transition">Se Connecter</button>
       </div>
     </div>
   </div>
 
-  <!-- SCREEN 2 : INTERFACE PRINCIPALE -->
-  <div id="app-screen" class="hidden fade-in">
-    <header class="bg-gradient-to-r from-amber-900 to-amber-700 text-white shadow-md">
-     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-bold md:text-2xl">Gestion Tontine</h1>
-        <p id="user-display-email" class="text-xs text-amber-200"></p>
+  <!-- APPLICATION PRINCIPALE -->
+  <div id="app-screen" class="hidden">
+    <header class="bg-amber-700 text-white shadow-md">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold">Gestion Tontine</h1>
+        <button id="btn-logout" class="bg-amber-800 hover:bg-amber-900 px-3 py-1 rounded text-xs">Déconnexion</button>
       </div>
-      <button id="btn-logout" class="bg-amber-800 hover:bg-red-700 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1">
-        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Déconnexion
-      </button>
-     </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-6">
-     
-     <!-- SITUATION JOURNALIÈRE -->
-     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
-       <div class="flex items-center justify-between mb-3">
-         <h3 class="text-sm font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1">
-           <i data-lucide="calendar-check" class="text-amber-600 w-4 h-4"></i> Situation Journalière
-         </h3>
-         <span id="live-date" class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium"></span>
-       </div>
-       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-         <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl">
-           <span class="text-[11px] uppercase font-bold text-emerald-700">Entrées du jour</span>
-           <p id="day-in" class="text-xl font-bold text-emerald-900">0 FCFA</p>
-         </div>
-         <div class="bg-rose-50 border border-rose-100 p-3 rounded-xl">
-           <span class="text-[11px] uppercase font-bold text-rose-700">Sorties du jour</span>
-           <p id="day-out" class="text-xl font-bold text-rose-900">0 FCFA</p>
-         </div>
-         <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl">
-           <span class="text-[11px] uppercase font-bold text-amber-700">Solde du jour</span>
-           <p id="day-solde" class="text-xl font-bold text-amber-900">0 FCFA</p>
-         </div>
-       </div>
-     </div>
+    <main class="max-w-7xl mx-auto px-4 py-6">
+      <!-- NAVIGATION -->
+      <nav class="flex gap-2 border-b mb-6 overflow-x-auto pb-2">
+        <button class="nav-tab px-4 py-2 text-sm font-semibold text-amber-600 border-b-2 border-amber-600" data-target="sec-membres">Membres</button>
+        <button class="nav-tab px-4 py-2 text-sm font-semibold text-slate-500" data-target="sec-cotisations">Cotisations</button>
+        <button class="nav-tab px-4 py-2 text-sm font-semibold text-slate-500" data-target="sec-calendrier">Calendrier</button>
+        <button class="nav-tab px-4 py-2 text-sm font-semibold text-slate-500" data-target="sec-commissions">Commissions</button>
+        <button class="nav-tab px-4 py-2 text-sm font-semibold text-slate-500" data-target="sec-situation">Situation Caisse</button>
+      </nav>
 
-     <!-- NAVIGATION -->
-     <nav class="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto" role="tablist">
-      <button class="tab-btn tab-active px-4 py-2.5 text-sm whitespace-nowrap flex items-center gap-1" data-tab="membres">
-        <i data-lucide="users" class="w-4 h-4"></i>Membres
-      </button> 
-      <button class="tab-btn px-4 py-2.5 text-sm whitespace-nowrap flex items-center gap-1" data-tab="cotisations">
-        <i data-lucide="wallet" class="w-4 h-4"></i>Mouvements
-      </button> 
-     </nav>
-
-     <!-- ONGLET MEMBRES -->
-     <section id="tab-membres" class="fade-in">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div class="flex flex-wrap gap-3 items-end">
-         <div class="flex-1 min-w-[90px]">
-           <label class="block text-xs font-medium text-gray-600 mb-1">N° Carnet</label>
-           <input id="inp-carnet" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-         </div>
-         <div class="flex-1 min-w-[150px]">
-           <label class="block text-xs font-medium text-gray-600 mb-1">Nom & Prénoms</label>
-           <input id="inp-nom" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-         </div>
-         <div class="flex-1 min-w-[110px]">
-           <label class="block text-xs font-medium text-gray-600 mb-1">Mise (FCFA)</label>
-           <input id="inp-mise" type="number" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-         </div>
-         <button id="btn-add-membre" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-lg text-sm font-medium h-[38px] transition">＋ Ajouter</button>
+      <!-- 1. RUBRIQUE MEMBRES -->
+      <section id="sec-membres" class="tab-content">
+        <div class="bg-white p-4 rounded-xl shadow-sm border mb-6">
+          <h3 class="font-bold text-amber-700 mb-3">Ajouter / Modifier un Membre</h3>
+          <form id="form-membre" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <input id="m-carnet" placeholder="N° Carnet" required class="border rounded p-2 text-sm">
+            <input id="m-nom" placeholder="Nom" required class="border rounded p-2 text-sm">
+            <input id="m-prenom" placeholder="Prénoms" required class="border rounded p-2 text-sm">
+            <input id="m-tel" placeholder="Téléphone" required class="border rounded p-2 text-sm">
+            <input id="m-mise" type="number" placeholder="Mise (FCFA)" required class="border rounded p-2 text-sm">
+            <button type="submit" class="md:col-span-5 bg-amber-600 text-white font-medium py-2 rounded text-sm hover:bg-amber-700">Sauvegarder le membre</button>
+          </form>
         </div>
-      </div>
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-amber-50 text-amber-900">
+              <tr>
+                <th class="p-3">N° Carnet</th>
+                <th class="p-3">Nom & Prénoms</th>
+                <th class="p-3">Téléphone</th>
+                <th class="p-3">Mise (FCFA)</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="list-membres" class="divide-y"></tbody>
+          </table>
+        </div>
+      </section>
 
-      <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-100 bg-white">
-       <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-700 border-b border-gray-100">
-         <tr>
-          <th class="px-4 py-3 text-left font-semibold">Carnet</th>
-          <th class="px-4 py-3 text-left font-semibold">Nom & Prénoms</th>
-          <th class="px-4 py-3 text-right font-semibold">Mise</th>
-          <th class="px-4 py-3 text-right font-semibold">Total Cotisé</th>
-          <th class="px-4 py-3 text-right font-semibold">Total Tiré</th>
-          <th class="px-4 py-3 text-right font-semibold">Solde Permanent</th>
-         </tr>
-        </thead>
-        <tbody id="membres-tbody" class="divide-y divide-gray-100"></tbody>
-       </table>
-      </div>
-     </section>
+      <!-- 2. RUBRIQUE COTISATIONS -->
+      <section id="sec-cotisations" class="tab-content hidden">
+        <div class="bg-white p-4 rounded-xl shadow-sm border mb-6">
+          <h3 class="font-bold text-amber-700 mb-3">Enregistrer une Opération</h3>
+          <form id="form-cotisation" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input id="c-carnet" placeholder="N° Carnet" required class="border rounded p-2 text-sm">
+            <input id="c-montant" type="number" placeholder="Montant unitaire (FCFA)" required class="border rounded p-2 text-sm">
+            <input id="c-mises" type="number" value="1" placeholder="Nombre de mises" required class="border rounded p-2 text-sm">
+            <select id="c-type" class="border rounded p-2 text-sm">
+              <option value="Cotisation">Cotisation (Entrée)</option>
+              <option value="Paiement">Paiement (Sortie/Tirage)</option>
+            </select>
+            <input id="c-date" type="date" required class="border rounded p-2 text-sm">
+            <button type="submit" class="md:col-span-3 bg-emerald-600 text-white font-medium py-2 rounded text-sm hover:bg-emerald-700">Sauvegarder l'opération</button>
+          </form>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="p-3">Date</th>
+                <th class="p-3">Carnet</th>
+                <th class="p-3">Type</th>
+                <th class="p-3">Unitaire</th>
+                <th class="p-3">Mises</th>
+                <th class="p-3">Total</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="list-cotisations" class="divide-y"></tbody>
+          </table>
+        </div>
+      </section>
 
-     <!-- ONGLET MOUVEMENTS -->
-     <section id="tab-cotisations" class="hidden fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <h3 class="text-md font-semibold text-emerald-700 mb-3 flex items-center gap-1"><i data-lucide="arrow-down-circle"></i> Encaisser Cotisation</h3>
-          <div class="space-y-3">
-            <select id="select-cotis" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"></select>
-            <input id="inp-cotis-mult" type="number" value="1" min="1" placeholder="Nombre de mises" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-            <button id="btn-save-cotis" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-medium transition">Valider l'encaissement</button>
+      <!-- 3. CALENDRIER DE TONTINE -->
+      <section id="sec-calendrier" class="tab-content hidden">
+        <div class="bg-white p-4 rounded-xl shadow-sm border">
+          <h3 class="font-bold text-amber-700 mb-4">Calendrier de Tontine</h3>
+          <div class="flex gap-2 mb-4">
+            <select id="cal-vue" class="border rounded p-2 text-sm">
+              <option value="journalier">Journalier</option>
+              <option value="mensuel">Mensuel</option>
+              <option value="annuel">Annuel</option>
+            </select>
+          </div>
+          <div id="cal-result" class="p-4 bg-slate-50 rounded border text-sm font-medium">
+            Sélectionnez un type de vue pour consulter le calendrier des échéances.
           </div>
         </div>
+      </section>
 
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <h3 class="text-md font-semibold text-rose-700 mb-3 flex items-center gap-1"><i data-lucide="arrow-up-circle"></i> Décaisser Paiement</h3>
-          <div class="space-y-3">
-            <select id="select-retrait" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"></select>
-            <input id="inp-retrait-val" type="number" min="0" placeholder="Montant (FCFA)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-            <button id="btn-save-retrait" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg text-sm font-medium transition">Valider le décaissement</button>
+      <!-- 4. COMMISSIONS -->
+      <section id="sec-commissions" class="tab-content hidden">
+        <div class="bg-white p-4 rounded-xl shadow-sm border">
+          <h3 class="font-bold text-amber-700 mb-4">Calcul des Commissions</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <h4 class="font-semibold text-amber-800">Commission Mensuelle</h4>
+              <p class="text-2xl font-bold mt-2" id="comm-mensuelle">0 FCFA</p>
+            </div>
+            <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <h4 class="font-semibold text-amber-800">Commission Annuelle</h4>
+              <p class="text-2xl font-bold mt-2" id="comm-annuelle">0 FCFA</p>
+            </div>
           </div>
         </div>
-     </section>
+      </section>
 
+      <!-- 5. SITUATION DE LA CAISSE -->
+      <section id="sec-situation" class="tab-content hidden">
+        <div class="bg-white p-4 rounded-xl shadow-sm border">
+          <h3 class="font-bold text-amber-700 mb-4">Situation Globale de la Caisse</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <span class="text-xs font-bold text-emerald-700">ENTRÉES (Cotisations)</span>
+              <p id="sit-entrees" class="text-2xl font-bold text-emerald-800">0 FCFA</p>
+            </div>
+            <div class="p-4 bg-rose-50 border border-rose-200 rounded-lg">
+              <span class="text-xs font-bold text-rose-700">SORTIES (Paiements)</span>
+              <p id="sit-sorties" class="text-2xl font-bold text-rose-800">0 FCFA</p>
+            </div>
+            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <span class="text-xs font-bold text-blue-700">SOLDE DISPONIBLE</span>
+              <p id="sit-solde" class="text-2xl font-bold text-blue-800">0 FCFA</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
-  <!-- Chargement des scripts JS -->
-  <script type="module" src="script.js"></script>
+  <script>
+    // Configuration Firebase (Gratuit)
+    const firebaseConfig = {
+      apiKey: "VOTRE_API_KEY",
+      authDomain: "VOTRE_PROJET.firebaseapp.com",
+      projectId: "VOTRE_PROJET",
+      storageBucket: "VOTRE_PROJET.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "VOTRE_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Gestion de la Connexion / Déconnexion
+    document.getElementById('btn-login').addEventListener('click', () => {
+      const email = document.getElementById('auth-email').value;
+      const pass = document.getElementById('auth-pass').value;
+      auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Erreur: " + err.message));
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        chargerDonnees();
+      } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('app-screen').classList.add('hidden');
+      }
+    });
+
+    // Navigation par onglets
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(b => b.className = "nav-tab px-4 py-2 text-sm font-semibold text-slate-500");
+        btn.className = "nav-tab px-4 py-2 text-sm font-semibold text-amber-600 border-b-2 border-amber-600";
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+        document.getElementById(btn.dataset.target).classList.remove('hidden');
+      });
+    });
+
+    // Sauvegarder Membre (Firestore)
+    document.getElementById('form-membre').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const carnet = document.getElementById('m-carnet').value;
+      db.collection('membres').doc(carnet).set({
+        carnet: carnet,
+        nom: document.getElementById('m-nom').value,
+        prenom: document.getElementById('m-prenom').value,
+        tel: document.getElementById('m-tel').value,
+        mise: Number(document.getElementById('m-mise').value)
+      }).then(() => {
+        alert("Membre enregistré !");
+        document.getElementById('form-membre').reset();
+        chargerDonnees();
+      });
+    });
+
+    // Sauvegarder Cotisation (Firestore)
+    document.getElementById('form-cotisation').addEventListener('submit', (e) => {
+      e.preventDefault();
+      db.collection('cotisations').add({
+        carnet: document.getElementById('c-carnet').value,
+        montant: Number(document.getElementById('c-montant').value),
+        mises: Number(document.getElementById('c-mises').value),
+        type: document.getElementById('c-type').value,
+        date: document.getElementById('c-date').value
+      }).then(() => {
+        alert("Opération sauvegardée !");
+        document.getElementById('form-cotisation').reset();
+        chargerDonnees();
+      });
+    });
+
+    // Chargement & Calculs
+    function chargerDonnees() {
+      // Membres
+      db.collection('membres').get().then(snap => {
+        const tbody = document.getElementById('list-membres');
+        tbody.innerHTML = '';
+        snap.forEach(doc => {
+          const d = doc.data();
+          tbody.innerHTML += `<tr>
+            <td class="p-3 font-bold">${d.carnet}</td>
+            <td class="p-3">${d.nom} ${d.prenom}</td>
+            <td class="p-3">${d.tel}</td>
+            <td class="p-3">${d.mise} FCFA</td>
+            <td class="p-3"><button onclick="modifierMembre('${d.carnet}')" class="text-blue-600 font-medium">Modifier</button></td>
+          </tr>`;
+        });
+      });
+
+      // Cotisations & Situation
+      db.collection('cotisations').get().then(snap => {
+        const tbody = document.getElementById('list-cotisations');
+        tbody.innerHTML = '';
+        let totalEntrees = 0;
+        let totalSorties = 0;
+
+        snap.forEach(doc => {
+          const d = doc.data();
+          const total = d.montant * d.mises;
+          if (d.type === 'Cotisation') totalEntrees += total;
+          else totalSorties += total;
+
+          tbody.innerHTML += `<tr>
+            <td class="p-3">${d.date}</td>
+            <td class="p-3 font-bold">${d.carnet}</td>
+            <td class="p-3">${d.type}</td>
+            <td class="p-3">${d.montant} FCFA</td>
+            <td class="p-3">${d.mises}</td>
+            <td class="p-3 font-bold">${total} FCFA</td>
+            <td class="p-3"><button onclick="supprimerCotis('${doc.id}')" class="text-rose-600 font-medium">Effacer/Modifier</button></td>
+          </tr>`;
+        });
+
+        document.getElementById('sit-entrees').innerText = totalEntrees + " FCFA";
+        document.getElementById('sit-sorties').innerText = totalSorties + " FCFA";
+        document.getElementById('sit-solde').innerText = (totalEntrees - totalSorties) + " FCFA";
+        
+        // Exemple basique de commission (1 mise par cycle mensuel)
+        document.getElementById('comm-mensuelle').innerText = (totalEntrees * 0.03).toFixed(0) + " FCFA";
+        document.getElementById('comm-annuelle').innerText = (totalEntrees * 0.05).toFixed(0) + " FCFA";
+      });
+    }
+
+    function modifierMembre(carnet) {
+      const nom = prompt("Nouveau nom :");
+      if (nom) {
+        db.collection('membres').doc(carnet).update({ nom: nom }).then(() => chargerDonnees());
+      }
+    }
+
+    function supprimerCotis(id) {
+      if (confirm("Voulez-vous annuler/supprimer cette opération ?")) {
+        db.collection('cotisations').doc(id).delete().then(() => chargerDonnees());
+      }
+    }
+  </script>
 </body>
 </html>
