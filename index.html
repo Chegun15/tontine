@@ -3,196 +3,154 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestion Tontine Journalière</title>
-  <!-- Frameworks CSS et Icônes gratuits -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <title>Gestion Tontine Pro</title>
+  <!-- Frameworks CSS et Icônes -->
+  <script src="https://tailwindcss.com"></script>
+  <script src="https://jsdelivr.net"></script>
   <link href="https://googleapis.com" rel="stylesheet">
-  
-  <style>
-    body { font-family: 'DM Sans', sans-serif; }
-    .tab-active { border-bottom: 3px solid #d97706; color: #d97706; font-weight: 600; }
-    .tab-btn { transition: all 0.2s; }
-    .tab-btn:hover { color: #d97706; }
-    .fade-in { animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="min-h-screen w-full bg-orange-50/30">
+<body class="min-h-screen w-full bg-slate-50">
 
-  <!-- EN-TÊTE -->
-  <header class="shadow-md bg-gradient-to-r from-amber-800 to-amber-600">
-   <div class="max-w-6xl mx-auto px-4 py-5 flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-white md:text-3xl">Gestion Tontine</h1>
-    <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">Journalière</span>
-   </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto px-4 py-6">
-   
-   <!-- NAVIGATION DES ONGLETS -->
-   <nav class="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto" role="tablist">
-    <button class="tab-btn tab-active px-4 py-3 text-sm whitespace-nowrap flex items-center" data-tab="membres">
-      <i data-lucide="users" class="w-4 h-4 mr-1"></i>Membres
-    </button> 
-    <button class="tab-btn px-4 py-3 text-sm whitespace-nowrap flex items-center" data-tab="cotisations">
-      <i data-lucide="wallet" class="w-4 h-4 mr-1"></i>Cotisations & Paiements
-    </button> 
-    <button class="tab-btn px-4 py-3 text-sm whitespace-nowrap flex items-center" data-tab="situation">
-      <i data-lucide="bar-chart-3" class="w-4 h-4 mr-1"></i>Situation Globale
-    </button>
-   </nav>
-
-   <!-- ONGLET 1: MEMBRES -->
-   <section id="tab-membres" class="fade-in">
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
-      <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center">
-        <i data-lucide="user-plus" class="w-4 h-4 mr-1 text-amber-600"></i> Ajouter / Modifier un Membre
-      </h3>
-      <div class="flex flex-wrap gap-3 items-end">
-       <div class="flex-1 min-w-[100px]">
-         <label for="inp-carnet" class="block text-xs font-medium text-gray-600 mb-1">N° Carnet</label>
-         <input id="inp-carnet" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none">
-       </div>
-       <div class="flex-1 min-w-[120px]">
-         <label for="inp-nom" class="block text-xs font-medium text-gray-600 mb-1">Nom & Prénoms</label>
-         <input id="inp-nom" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none">
-       </div>
-       <div class="flex-1 min-w-[120px]">
-         <label for="inp-tel" class="block text-xs font-medium text-gray-600 mb-1">Téléphone</label>
-         <input id="inp-tel" type="tel" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none">
-       </div>
-       <div class="flex-1 min-w-[100px]">
-         <label for="inp-mise" class="block text-xs font-medium text-gray-600 mb-1">Mise Fixe (FCFA)</label>
-         <input id="inp-mise" type="number" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none">
-       </div>
-       <button id="btn-add-membre" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-lg text-sm font-medium h-[38px] transition">＋ Ajouter</button>
-       <button id="btn-save-edit" class="hidden bg-amber-800 hover:bg-amber-900 text-white px-5 py-2 rounded-lg text-sm font-medium h-[38px] transition">Enregistrer</button>
+  <!-- SCREEN 1 : AUTHENTIFICATION -->
+  <div id="auth-screen" class="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-amber-800 to-amber-600">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md fade-in">
+      <div class="text-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-800">Tontine Securis</h2>
+        <p class="text-gray-500 mt-1" id="auth-subtitle">Connectez-vous à votre espace Collecteur</p>
       </div>
-    </div>
-
-    <!-- Tableau Membres -->
-    <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-100 bg-white">
-     <table class="w-full text-sm">
-      <thead class="bg-amber-50 text-amber-900">
-       <tr>
-        <th class="px-4 py-3 text-left font-semibold">Carnet</th>
-        <th class="px-4 py-3 text-left font-semibold">Nom & Prénoms</th>
-        <th class="px-4 py-3 text-left font-semibold">Téléphone</th>
-        <th class="px-4 py-3 text-right font-semibold">Mise</th>
-        <th class="px-4 py-3 text-right font-semibold">Total Cotisé</th>
-        <th class="px-4 py-3 text-right font-semibold">Total Tiré</th>
-        <th class="px-4 py-3 text-right font-semibold">Solde</th>
-        <th class="px-4 py-3 text-center font-semibold">Actions</th>
-       </tr>
-      </thead>
-      <tbody id="membres-tbody" class="divide-y divide-gray-100"></tbody>
-     </table>
-    </div>
-    <p id="empty-membres" class="text-center py-8 italic text-gray-400">Aucun membre enregistré.</p>
-   </section>
-
-   <!-- ONGLET 2: COTISATIONS & PAIEMENTS -->
-   <section id="tab-cotisations" class="hidden fade-in">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       
-      <!-- Enregistrer encaissement -->
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-        <h3 class="text-md font-semibold text-emerald-700 mb-3 flex items-center">
-          <i data-lucide="arrow-down-circle" class="w-5 h-5 mr-1"></i> Encaisser une Cotisation
-        </h3>
-        <div class="space-y-3">
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Sélectionner le Membre</label>
-            <select id="select-cotis-membre" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"></select>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Nombre de mises versées</label>
-            <input id="inp-cotis-Nbre" type="number" value="1" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-          </div>
-          <button id="btn-save-cotis" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-medium transition">Valider l'encaissement</button>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Adresse Email</label>
+          <input id="auth-email" type="email" placeholder="agent@tontine.com" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Mot de passe</label>
+          <input id="auth-password" type="password" placeholder="••••••••" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500">
+        </div>
+        
+        <button id="btn-primary-auth" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 rounded-xl transition text-sm">Se connecter</button>
+        
+        <div class="text-center mt-4">
+          <button id="btn-toggle-auth" class="text-sm text-amber-700 hover:underline">Pas de compte ? Créer un espace Agent</button>
         </div>
       </div>
-
-      <!-- Enregistrer Retrait/Paiement (Tirage) -->
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-        <h3 class="text-md font-semibold text-blue-700 mb-3 flex items-center">
-          <i data-lucide="arrow-up-circle" class="w-5 h-5 mr-1"></i> Effectuer un Paiement (Tirage)
-        </h3>
-        <div class="space-y-3">
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Bénéficiaire</label>
-            <select id="select-retrait-membre" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"></select>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Montant Payé (FCFA)</label>
-            <input id="inp-retrait-montant" type="number" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none" placeholder="Ex: 50000">
-          </div>
-          <button id="btn-save-retrait" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition">Valider le paiement</button>
-        </div>
-      </div>
-
     </div>
-   </section>
+  </div>
 
-   <!-- ONGLET 3: SITUATION GLOBALE -->
-   <section id="tab-situation" class="hidden fade-in">
-     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-       <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-center">
-         <span class="text-xs uppercase font-bold text-emerald-700">Total Encaissé</span>
-         <p id="stat-total-cotise" class="text-2xl font-bold text-emerald-900 mt-1">0 FCFA</p>
+  <!-- SCREEN 2 : INTERFACE PRINCIPALE -->
+  <div id="app-screen" class="hidden fade-in">
+    <header class="bg-gradient-to-r from-amber-900 to-amber-700 text-white shadow-md">
+     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold md:text-2xl">Gestion Tontine</h1>
+        <p id="user-display-email" class="text-xs text-amber-200"></p>
+      </div>
+      <button id="btn-logout" class="bg-amber-800 hover:bg-red-700 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1">
+        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Déconnexion
+      </button>
+     </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6">
+     
+     <!-- SITUATION JOURNALIÈRE -->
+     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+       <div class="flex items-center justify-between mb-3">
+         <h3 class="text-sm font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1">
+           <i data-lucide="calendar-check" class="text-amber-600 w-4 h-4"></i> Situation Journalière
+         </h3>
+         <span id="live-date" class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium"></span>
        </div>
-       <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-center">
-         <span class="text-xs uppercase font-bold text-blue-700">Total Distribué</span>
-         <p id="stat-total-paye" class="text-2xl font-bold text-blue-900 mt-1">0 FCFA</p>
-       </div>
-       <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-center">
-         <span class="text-xs uppercase font-bold text-amber-700">Caisse Actuelle</span>
-         <p id="stat-caisse" class="text-2xl font-bold text-amber-900 mt-1">0 FCFA</p>
+       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+         <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl">
+           <span class="text-[11px] uppercase font-bold text-emerald-700">Entrées du jour</span>
+           <p id="day-in" class="text-xl font-bold text-emerald-900">0 FCFA</p>
+         </div>
+         <div class="bg-rose-50 border border-rose-100 p-3 rounded-xl">
+           <span class="text-[11px] uppercase font-bold text-rose-700">Sorties du jour</span>
+           <p id="day-out" class="text-xl font-bold text-rose-900">0 FCFA</p>
+         </div>
+         <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl">
+           <span class="text-[11px] uppercase font-bold text-amber-700">Solde du jour</span>
+           <p id="day-solde" class="text-xl font-bold text-amber-900">0 FCFA</p>
+         </div>
        </div>
      </div>
-   </section>
 
-  </main>
+     <!-- NAVIGATION -->
+     <nav class="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto" role="tablist">
+      <button class="tab-btn tab-active px-4 py-2.5 text-sm whitespace-nowrap flex items-center gap-1" data-tab="membres">
+        <i data-lucide="users" class="w-4 h-4"></i>Membres
+      </button> 
+      <button class="tab-btn px-4 py-2.5 text-sm whitespace-nowrap flex items-center gap-1" data-tab="cotisations">
+        <i data-lucide="wallet" class="w-4 h-4"></i>Mouvements
+      </button> 
+     </nav>
 
-  <!-- LOGIQUE JAVASCRIPT COMPLETTE (Zéro Dépendance Serveur) -->
-  <script>
-    // Initialisation des données locales stockées
-    let membres = JSON.parse(localStorage.getItem('tontine_membres')) || [];
-    let editIndex = null;
+     <!-- ONGLET MEMBRES -->
+     <section id="tab-membres" class="fade-in">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+        <div class="flex flex-wrap gap-3 items-end">
+         <div class="flex-1 min-w-[90px]">
+           <label class="block text-xs font-medium text-gray-600 mb-1">N° Carnet</label>
+           <input id="inp-carnet" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
+         </div>
+         <div class="flex-1 min-w-[150px]">
+           <label class="block text-xs font-medium text-gray-600 mb-1">Nom & Prénoms</label>
+           <input id="inp-nom" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
+         </div>
+         <div class="flex-1 min-w-[110px]">
+           <label class="block text-xs font-medium text-gray-600 mb-1">Mise (FCFA)</label>
+           <input id="inp-mise" type="number" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
+         </div>
+         <button id="btn-add-membre" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-lg text-sm font-medium h-[38px] transition">＋ Ajouter</button>
+        </div>
+      </div>
 
-    // Éléments du DOM
-    const tabs = document.querySelectorAll('.tab-btn');
-    const sections = {
-      membres: document.getElementById('tab-membres'),
-      cotisations: document.getElementById('tab-cotisations'),
-      situation: document.getElementById('tab-situation')
-    };
+      <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-100 bg-white">
+       <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-700 border-b border-gray-100">
+         <tr>
+          <th class="px-4 py-3 text-left font-semibold">Carnet</th>
+          <th class="px-4 py-3 text-left font-semibold">Nom & Prénoms</th>
+          <th class="px-4 py-3 text-right font-semibold">Mise</th>
+          <th class="px-4 py-3 text-right font-semibold">Total Cotisé</th>
+          <th class="px-4 py-3 text-right font-semibold">Total Tiré</th>
+          <th class="px-4 py-3 text-right font-semibold">Solde Permanent</th>
+         </tr>
+        </thead>
+        <tbody id="membres-tbody" class="divide-y divide-gray-100"></tbody>
+       </table>
+      </div>
+     </section>
 
-    // Gestion de la navigation entre onglets
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('tab-active'));
-        tab.classList.add('tab-active');
-        
-        const target = tab.getAttribute('data-tab');
-        Object.keys(sections).forEach(key => {
-          if(sections[key]) {
-            if(key === target) sections[key].classList.remove('hidden');
-            else sections[key].classList.add('hidden');
-          }
-        });
-        updateDropdowns();
-        updateStats();
-      });
-    });
+     <!-- ONGLET MOUVEMENTS -->
+     <section id="tab-cotisations" class="hidden fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+          <h3 class="text-md font-semibold text-emerald-700 mb-3 flex items-center gap-1"><i data-lucide="arrow-down-circle"></i> Encaisser Cotisation</h3>
+          <div class="space-y-3">
+            <select id="select-cotis" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"></select>
+            <input id="inp-cotis-mult" type="number" value="1" min="1" placeholder="Nombre de mises" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
+            <button id="btn-save-cotis" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-medium transition">Valider l'encaissement</button>
+          </div>
+        </div>
 
-    // Sauvegarder les données
-    function saveToStorage() {
-      localStorage.setItem('tontine_membres', JSON.stringify(membres));
-      renderMembres();
-      updateDropdowns();
-      updateStats();
-    }
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+          <h3 class="text-md font-semibold text-rose-700 mb-3 flex items-center gap-1"><i data-lucide="arrow-up-circle"></i> Décaisser Paiement</h3>
+          <div class="space-y-3">
+            <select id="select-retrait" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"></select>
+            <input id="inp-retrait-val" type="number" min="0" placeholder="Montant (FCFA)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
+            <button id="btn-save-retrait" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg text-sm font-medium transition">Valider le décaissement</button>
+          </div>
+        </div>
+     </section>
 
-    // Ajouter / Modifier un membre
+    </main>
+  </div>
+
+  <!-- Chargement des scripts JS -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
