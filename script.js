@@ -60,19 +60,51 @@ function pushLogToCloud(type, detail) {
 }
 
 // --- ACTIONS CLICS FONCTIONNELS ---
-document.getElementById('btn-login').addEventListener('click', () => {
+document.getElementById('btn-login').addEventListener('click', (e) => {
+  e.preventDefault();
   const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-pass').value.trim();
-  if (email && pass) signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Erreur : " + err.message));
+  if (email && pass) {
+    signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Erreur : " + err.message));
+  } else {
+    alert("Veuillez remplir les champs de connexion.");
+  }
 });
 
-document.getElementById('btn-signup').addEventListener('click', () => {
+// Gestion de l'Adhésion Sécurisée
+document.getElementById('btn-signup').addEventListener('click', (e) => {
+  e.preventDefault();
+
   const email = document.getElementById('signup-email').value.trim();
   const pass = document.getElementById('signup-pass').value.trim();
-  const confirm = document.getElementById('signup-confirm-pass').value.trim();
+  const confirmPass = document.getElementById('signup-confirm-pass').value.trim();
 
-  if (pass !== confirm) return alert("Les mots de passe ne correspondent pas !");
-  if (email && pass) createUserWithEmailAndPassword(auth, email, pass).catch(err => alert("Erreur d'adhésion : " + err.message));
+  if (!email || !pass) {
+    alert("Veuillez remplir tous les champs obligatoires !");
+    return;
+  }
+
+  if (pass !== confirmPass) {
+    alert("Les mots de passe ne correspondent pas !");
+    return;
+  }
+
+  if (pass.length < 6) {
+    alert("Par sécurité, le mot de passe doit contenir au moins 6 caractères.");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, pass)
+    .then(() => {
+      alert("Compte Agent créé avec succès ! Bienvenue.");
+    })
+    .catch((err) => {
+      if (err.code === "auth/email-already-in-use") {
+        alert("Cette adresse email est déjà utilisée par un autre collecteur.");
+      } else {
+        alert("Erreur d'adhésion : " + err.message);
+      }
+    });
 });
 
 document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
@@ -186,7 +218,7 @@ function renderInterface() {
     tr.innerHTML = `
       <td class="p-3 font-semibold text-slate-500">#${m.carnet}</td>
       <td class="p-3 font-bold text-slate-800">${m.nom}</td>
-      <td class="p-3 text-slate-500">${m.tel}</td>
+      <td class="p-3 text-slate-500">${m.tel || '-'}</td>
       <td class="p-3 text-right font-medium">${m.mise} F</td>
       <td class="p-3 text-right text-emerald-600 font-bold">+${m.cotise} F</td>
       <td class="p-3 text-right text-amber-800 font-extrabold">${m.cotise - m.paye} F</td>
@@ -195,7 +227,7 @@ function renderInterface() {
   });
 }
 
-// Navigation simple entre onglets
+// CORRECTION DE LA FIN DU FICHIER (Restauration de la navigation)
 document.querySelectorAll('.nav-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-tab').forEach(t => t.className = "nav-tab px-4 py-2 text-sm font-semibold text-slate-500");
